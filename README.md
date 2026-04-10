@@ -1,8 +1,8 @@
 # Lost-and-Found Object Tracker
 
 **Group 8**  
-**Roll No.:** U24ev018, U24ev011, U24ev001, U24ev027  
-**Course:** 2nd Year Data Structures / C Programming Project
+**Roll No.:** U24ev018(Arush Poonia), U24ev011(Aman Gupta), U24ev001(Jayant Kumawat), U24ev027(Sneha Ahir)  
+**Course:** B.tech in Electronics and VLSI(2nd year)
 
 ## 1. Problem Breakdown
 The college campus needs a system to store and match lost and found items. We broke the problem down into the following sub-problems:

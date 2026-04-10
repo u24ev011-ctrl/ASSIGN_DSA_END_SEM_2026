@@ -1,111 +1,119 @@
+#ifndef TRACKER_H
+#define TRACKER_H
+
 #include <iostream>
 #include <string>
-#include <vector>
-#include <unordered_map>
-#include <iomanip>
 
 using namespace std;
 
-// Step 1: Define the Item structure
+// Maximum items the database can hold (Basic Concept: Array size)
+const int MAX_ITEMS = 1000;
+
+// 1. Basic Struct Definition
 struct Item {
     int id;
     string name;
     string category;
     string status; // "LOST" or "FOUND"
     
-    Item(int id, string n, string c, string s) : id(id), name(n), category(c), status(s) {}
+    // Default constructor needed for basic arrays
+    Item() {
+        id = 0;
+        name = "";
+        category = "";
+        status = "";
+    }
+    
+    // Parameterized constructor
+    Item(int i, string n, string c, string s) {
+        id = i;
+        name = n;
+        category = c;
+        status = s;
+    }
 };
 
-// Step 2: Define the Tracker System using a Hash Table (unordered_map)
+// 2. Class using an Array of Structs
 class LostAndFoundTracker {
 private:
-    // Hash Table: Key is Category, Value is a vector of Items
-    unordered_map<string, vector<Item>> database;
+    Item database[MAX_ITEMS]; // Basic Concept: Array instead of map/vector
+    int itemCount;            // Keep track of how many items are in the array
     int nextId;
 
 public:
     LostAndFoundTracker() {
-        nextId = 101; // Starting ID for items
+        itemCount = 0;
+        nextId = 101;
     }
 
-    // Sub-problem: Item Insertion (Lost)
     void addLost(string name, string category) {
-        Item newItem(nextId++, name, category, "LOST");
-        database[category].push_back(newItem);
-        cout << "[+] Reported LOST: " << name << " (ID: " << newItem.id << ", Category: " << category << ")\n";
+        if (itemCount >= MAX_ITEMS) {
+            cout << "Database is full!\n";
+            return;
+        }
+        database[itemCount] = Item(nextId++, name, category, "LOST");
+        cout << "[+] Reported LOST: " << name << " (ID: " << database[itemCount].id << ")\n";
+        itemCount++; // Increase the size tracker
     }
 
-    // Sub-problem: Item Insertion (Found)
     void addFound(string name, string category) {
-        Item newItem(nextId++, name, category, "FOUND");
-        database[category].push_back(newItem);
-        cout << "[+] Reported FOUND: " << name << " (ID: " << newItem.id << ", Category: " << category << ")\n";
+        if (itemCount >= MAX_ITEMS) {
+            cout << "Database is full!\n";
+            return;
+        }
+        database[itemCount] = Item(nextId++, name, category, "FOUND");
+        cout << "[+] Reported FOUND: " << name << " (ID: " << database[itemCount].id << ")\n";
+        itemCount++;
         
-        // Auto-trigger matching when a found item is added
+        // Auto-trigger match when something is found
         matchItems(category);
     }
 
-    // Sub-problem: Searching by Category
     void searchByCategory(string category) {
-        cout << "\n--- Search Results for Category: '" << category << "' ---\n";
-        if (database.find(category) == database.end() || database[category].empty()) {
+        cout << "\n--- Search Results for: '" << category << "' ---\n";
+        bool foundAny = false;
+        
+        // Basic linear search through the array
+        for (int i = 0; i < itemCount; i++) {
+            if (database[i].category == category) {
+                cout << "ID: " << database[i].id << " | Name: " << database[i].name 
+                     << " | Status: " << database[i].status << "\n";
+                foundAny = true;
+            }
+        }
+        
+        if (!foundAny) {
             cout << "No items found in this category.\n";
-            return;
         }
-        for (const auto& item : database[category]) {
-            cout << "ID: " << item.id << " | Name: " << item.name << " | Status: " << item.status << "\n";
-        }
-        cout << "--------------------------------------------\n";
+        cout << "--------------------------------------\n";
     }
 
-    // Sub-problem: Matching logic
     void matchItems(string category) {
-        cout << "\n[*] Running Matcher for Category: '" << category << "'...\n";
-        if (database.find(category) == database.end()) return;
-
-        vector<Item>& items = database[category];
+        cout << "\n[*] Checking matches for category '" << category << "'...\n";
         bool matchFound = false;
 
-        // Simple nested loop to find Lost & Found items with similar names
-        for (size_t i = 0; i < items.size(); i++) {
-            if (items[i].status == "LOST") {
-                for (size_t j = 0; j < items.size(); j++) {
-                    if (items[j].status == "FOUND" && items[i].name == items[j].name) {
-                        cout << "    [!] POSSIBLE MATCH FOUND!\n";
-                        cout << "    LOST Item ID " << items[i].id << " (" << items[i].name << ") matches ";
-                        cout << "FOUND Item ID " << items[j].id << " (" << items[j].name << ")\n";
+        // Basic nested loops to compare items in the array
+        for (int i = 0; i < itemCount; i++) {
+            if (database[i].category == category && database[i].status == "LOST") {
+                
+                for (int j = 0; j < itemCount; j++) {
+                    if (database[j].category == category && 
+                        database[j].status == "FOUND" && 
+                        database[i].name == database[j].name) {
+                        
+                        cout << "    [!] MATCH: LOST ID " << database[i].id 
+                             << " == FOUND ID " << database[j].id << "\n";
                         matchFound = true;
                     }
                 }
             }
         }
+        
         if (!matchFound) {
-            cout << "    No current matches in this category.\n";
+            cout << "    No current matches.\n";
         }
         cout << "\n";
     }
 };
 
-int main() {
-    LostAndFoundTracker tracker;
-
-    cout << "=======================================\n";
-    cout << "  CAMPUS LOST & FOUND TRACKER SYSTEM\n";
-    cout << "=======================================\n\n";
-
-    // 1. Add some lost items
-    tracker.addLost("Blue Water Bottle", "Accessories");
-    tracker.addLost("Scientific Calculator", "Electronics");
-    tracker.addLost("Hostel Room Keys", "Keys");
-
-    // 2. Add some found items (Triggering matching)
-    tracker.addFound("Hostel Room Keys", "Keys");
-    tracker.addFound("Generic Black Wallet", "Accessories");
-    tracker.addFound("Scientific Calculator", "Electronics");
-
-    // 3. Search functionality
-    tracker.searchByCategory("Electronics");
-    tracker.searchByCategory("Books"); // Category with no items
-
-    return 0;
-}
+#endif

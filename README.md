@@ -21,4 +21,26 @@ When deciding how to code this, we thought about three different data structures
 2. **Linked Lists:**
    - Using nodes and pointers to link items together.
    - *Pros:* Dynamic size, so it only uses exactly as much memory as it needs.
-   - *Cons:* Pointers can be annoying to debug (segmentation faults!),
+   - *Cons:* Pointers can be annoying to debug (segmentation faults!), and searching still requires checking every single node one by one.
+3. **Binary Search Tree (BST) or Hash Tables:**
+   - *Pros:* Super fast searching ($O(\log N)$ or $O(1)$).
+   - *Cons:* Way too overcomplicated for what we need. It's hard to do "fuzzy" string matching (like checking descriptions) with normal hash tables.
+
+## 3. Justification of Final Choice
+We decided to go with the **Array of Structs**. 
+*Why?* Honestly, for a 2nd-year project—especially since our core branch is Electronics and VLSI—simplicity and getting a bug-free working code was our top priority. Our campus lost-and-found probably won't have more than a hundred active items at a time anyway. Using basic arrays lets us use simple `for` loops to compare strings without overcomplicating things with pointers or complex tree logic.
+
+## 4. Complexity Breakdown
+Here is the time and space complexity for how our code runs:
+
+| Operation | Time Complexity | Space Complexity | Explanation |
+| :--- | :---: | :---: | :--- |
+| **Add Lost Item** | $O(1)$ | $O(1)$ | We just put it at the very end of the `lost_arr` array. |
+| **Add Found Item** | $O(1)$ | $O(1)$ | Placed at the end of the `found_arr` array. |
+| **Search (by Category)**| $O(N)$ | $O(1)$ | We use a loop to check every item in the array to see if the category matches. |
+| **Match Items** | $O(L \times F)$ | $O(1)$ | Uses a nested loop. It compares every Lost item ($L$) with every Found item ($F$). |
+
+## 5. Output Screenshots
+*(Below are the screenshots from our terminal showing the code compiling, adding items, and successfully matching a lost item with a found item!)*
+
+[//]: # (Hey team, don't forget to paste the images of the terminal output here before submitting!)

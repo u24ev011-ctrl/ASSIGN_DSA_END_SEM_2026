@@ -1,175 +1,185 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h> // students usually include this out of habit
 
-#define MAX_ITEMS 100
+#define MAX 100
 
-// Define the structure for an Item
-struct Item {
+// student like struct
+struct item {
     int id;
-    char category[50];
-    char description[100];
-    int isMatched; // 0 for unmatched, 1 for matched
+    char cat[50];
+    char desc[100];
+    int status; // 0 is pending, 1 is matched
 };
 
-// Global arrays to hold lost and found items
-struct Item lostItems[MAX_ITEMS];
-struct Item foundItems[MAX_ITEMS];
+// global variables
+struct item lost_arr[MAX];
+struct item found_arr[MAX];
 
-// Counters to keep track of the number of items
-int lostCount = 0;
-int foundCount = 0;
-int currentId = 101; // Starting ID for items
+int lost_cnt = 0;
+int found_cnt = 0;
+int id_counter = 101; 
 
-// Function to add a lost item
 void addLost() {
-    if (lostCount >= MAX_ITEMS) {
-        printf("Error: Lost items database is full!\n");
+    if (lost_cnt == MAX) {
+        printf("Array is full!\n");
         return;
     }
-    struct Item newItem;
-    newItem.id = currentId++;
-    newItem.isMatched = 0;
+    struct item temp;
+    temp.id = id_counter;
+    id_counter++;
+    temp.status = 0;
 
-    printf("Enter Category (e.g., Electronics, Book, Clothing): ");
-    scanf(" %49[^\n]", newItem.category); // Read string with spaces
-    printf("Enter Description (Color, brand, etc.): ");
-    scanf(" %99[^\n]", newItem.description);
+    printf("Enter category (no spaces): ");
+    scanf("%s", temp.cat); 
+    
+    printf("Enter description: ");
+    scanf(" %[^\n]s", temp.desc); // using the space trick for strings
 
-    lostItems[lostCount] = newItem;
-    lostCount++;
-    printf("--> Lost item added successfully with ID: %d\n\n", newItem.id);
+    lost_arr[lost_cnt] = temp;
+    lost_cnt++;
+    
+    //printf("debug: added id %d\n", temp.id);
+    printf("Item added succesfully. ID is %d\n\n", temp.id);
 }
 
-// Function to add a found item
 void addFound() {
-    if (foundCount >= MAX_ITEMS) {
-        printf("Error: Found items database is full!\n");
+    if (found_cnt == MAX) {
+        printf("Array is full!\n");
         return;
     }
-    struct Item newItem;
-    newItem.id = currentId++;
-    newItem.isMatched = 0;
+    struct item temp;
+    temp.id = id_counter++;
+    temp.status = 0;
 
-    printf("Enter Category (e.g., Electronics, Book, Clothing): ");
-    scanf(" %49[^\n]", newItem.category);
-    printf("Enter Description (Color, brand, etc.): ");
-    scanf(" %99[^\n]", newItem.description);
+    printf("Enter category (no spaces): ");
+    scanf("%s", temp.cat);
+    
+    printf("Enter description: ");
+    scanf(" %[^\n]s", temp.desc);
 
-    foundItems[foundCount] = newItem;
-    foundCount++;
-    printf("--> Found item added successfully with ID: %d\n\n", newItem.id);
+    found_arr[found_cnt] = temp;
+    found_cnt++;
+    
+    printf("Item added succesfully. ID is %d\n\n", temp.id);
 }
 
-// Function to search items by category
-void search() {
-    char searchCat[50];
-    printf("Enter Category to search: ");
-    scanf(" %49[^\n]", searchCat);
+void searchItem() {
+    char s[50];
+    printf("Enter category to search: ");
+    scanf("%s", s);
 
-    printf("\n--- Search Results for '%s' ---\n", searchCat);
-    int foundFlag = 0;
+    int flag = 0;
 
-    printf("[LOST ITEMS]\n");
-    for (int i = 0; i < lostCount; i++) {
-        if (strcasecmp(lostItems[i].category, searchCat) == 0) {
-            printf("ID: %d | Desc: %s | Status: %s\n", 
-                   lostItems[i].id, lostItems[i].description, 
-                   lostItems[i].isMatched ? "Matched" : "Pending");
-            foundFlag = 1;
+    printf("\n-- LOST ITEMS --\n");
+    for (int i = 0; i < lost_cnt; i++) {
+        // basic strcmp (case sensitive)
+        if (strcmp(lost_arr[i].cat, s) == 0) {
+            printf("ID: %d | Desc: %s | ", lost_arr[i].id, lost_arr[i].desc);
+            if(lost_arr[i].status == 0) {
+                printf("Status: Pending\n");
+            } else {
+                printf("Status: Matched\n");
+            }
+            flag = 1;
         }
     }
 
-    printf("\n[FOUND ITEMS]\n");
-    for (int i = 0; i < foundCount; i++) {
-        if (strcasecmp(foundItems[i].category, searchCat) == 0) {
-            printf("ID: %d | Desc: %s | Status: %s\n", 
-                   foundItems[i].id, foundItems[i].description, 
-                   foundItems[i].isMatched ? "Matched" : "Pending");
-            foundFlag = 1;
+    printf("\n-- FOUND ITEMS --\n");
+    for (int j = 0; j < found_cnt; j++) {
+        if (strcmp(found_arr[j].cat, s) == 0) {
+            printf("ID: %d | Desc: %s | ", found_arr[j].id, found_arr[j].desc);
+            if(found_arr[j].status == 0) {
+                printf("Status: Pending\n");
+            } else {
+                printf("Status: Matched\n");
+            }
+            flag = 1;
         }
     }
 
-    if (!foundFlag) {
-        printf("No items found in this category.\n");
+    if (flag == 0) {
+        printf("Not found anything.\n");
     }
-    printf("-------------------------------\n\n");
+    printf("\n");
 }
 
-// Function to match lost items with found items based on category
-void matchItems() {
-    printf("\n--- Potential Matches ---\n");
-    int matchFound = 0;
+void do_matching() {
+    printf("\n--- Matcher ---\n");
+    int got_match = 0;
 
-    for (int i = 0; i < lostCount; i++) {
-        if (lostItems[i].isMatched == 1) continue; // Skip already matched items
+    for (int i = 0; i < lost_cnt; i++) {
+        if (lost_arr[i].status == 1) {
+            continue; // skip if already matched
+        }
 
-        for (int j = 0; j < foundCount; j++) {
-            if (foundItems[j].isMatched == 1) continue;
+        for (int j = 0; j < found_cnt; j++) {
+            if (found_arr[j].status == 1) {
+                continue;
+            }
 
-            // Simple match logic: If categories are the same (case-insensitive)
-            if (strcasecmp(lostItems[i].category, foundItems[j].category) == 0) {
-                printf("Potential Match found!\n");
-                printf("LOST: ID %d - %s (%s)\n", lostItems[i].id, lostItems[i].category, lostItems[i].description);
-                printf("FOUND: ID %d - %s (%s)\n", foundItems[j].id, foundItems[j].category, foundItems[j].description);
+            // check if category is exactly the same
+            if (strcmp(lost_arr[i].cat, found_arr[j].cat) == 0) {
+                printf("Found a potential match!!\n");
+                printf("Lost: %d - %s\n", lost_arr[i].id, lost_arr[i].desc);
+                printf("Found: %d - %s\n", found_arr[j].id, found_arr[j].desc);
                 
-                // Allow user to confirm match
-                char choice;
-                printf("Confirm match? (y/n): ");
-                scanf(" %c", &choice);
-                if (choice == 'y' || choice == 'Y') {
-                    lostItems[i].isMatched = 1;
-                    foundItems[j].isMatched = 1;
-                    printf("Items marked as matched!\n\n");
-                    matchFound = 1;
-                    break; // Move to next lost item
+                char ch;
+                printf("Do you want to match them? (y/n): ");
+                scanf(" %c", &ch);
+                
+                if (ch == 'y' || ch == 'Y') {
+                    lost_arr[i].status = 1;
+                    found_arr[j].status = 1;
+                    printf("Matched succesfully!\n\n");
+                    got_match = 1;
+                    break; // break inner loop, move to next lost item
                 } else {
-                    printf("Match rejected. Continuing search...\n\n");
+                    printf("Skipping...\n\n");
                 }
             }
         }
     }
 
-    if (!matchFound) {
-        printf("No new matches found at this time.\n");
+    if (got_match == 0) {
+        printf("No matches right now.\n");
     }
-    printf("-------------------------\n\n");
+    printf("\n");
 }
 
 int main() {
-    int choice;
+    int ch;
 
-    printf("==========================================\n");
-    printf("   Campus Lost and Found Object Tracker   \n");
-    printf("==========================================\n");
-
+    // while loop for menu
     while (1) {
-        printf("Menu:\n");
-        printf("1. Report a Lost Item\n");
-        printf("2. Report a Found Item\n");
-        printf("3. Search Items by Category\n");
-        printf("4. Run Matcher (Find Matches)\n");
+        printf("=== Lost and Found System ===\n");
+        printf("1. Add Lost item\n");
+        printf("2. Add Found item\n");
+        printf("3. Search by category\n");
+        printf("4. Match items\n");
         printf("5. Exit\n");
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
+        printf("Enter choice: ");
+        scanf("%d", &ch);
 
-        switch (choice) {
-            case 1:
-                addLost();
-                break;
-            case 2:
-                addFound();
-                break;
-            case 3:
-                search();
-                break;
-            case 4:
-                matchItems();
-                break;
-            case 5:
-                printf("Exiting Tracker. Goodbye!\n");
-                return 0;
-            default:
-                printf("Invalid choice! Please try again.\n\n");
+        // if-else ladder instead of switch case
+        if (ch == 1) {
+            addLost();
+        } 
+        else if (ch == 2) {
+            addFound();
+        } 
+        else if (ch == 3) {
+            searchItem();
+        } 
+        else if (ch == 4) {
+            do_matching();
+        } 
+        else if (ch == 5) {
+            printf("Bye bye!\n");
+            break;
+        } 
+        else {
+            printf("Wrong choice try again.\n\n");
         }
     }
     return 0;
